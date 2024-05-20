@@ -1,0 +1,36 @@
+1. install miniconda3
+
+2. conda env create -n [envornmnemt name here] python==3.10 pip
+    I personally would prefer 3.9 but then this was given in the discussion, so be it.
+
+3. switch to the conda env, and then: https://pytorch.org/get-started/locally/
+    Take note of your cuda version. I use cuda 12.1.0 (verify with conda list)
+    Use the conda install script, it gets you the cuda runtime.. but only the runtime
+    To run Mamba at full speed, we need nvcc.. cuda toolkit.
+
+4. verify in your conda environment:
+    $ python 
+    >> import torch
+    >> torch.cuda.is_available()
+
+5. conda install nvidia/label/cuda-12.1.0::cuda-toolkit
+    Swap the cuda version if needed.
+
+6. verify in your conda environment:
+    $ which nvcc
+    $ echo $CONDA_PREFIX
+
+7. "export CUDA_HOME=$CONDA_PREFIX"
+    https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#macos-and-linux
+    Export this variable using this method in the link
+    Verify with: echo $CUDA_HOME 
+
+8. pip install causal-conv1d mamba-ssm
+
+9. pip install transformers
+    Use pip for transoformers, the conda packages are outdated.
+    You can technically do this step anywhere after you install pytorch..
+
+10. Mamba Resources
+    https://huggingface.co/state-spaces/mamba-2.8b-hf
+    https://huggingface.co/docs/transformers/v4.39.3/en/model_doc/mamba
