@@ -1,19 +1,23 @@
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from datasets import load_dataset,Dataset
 import pandas
+import json
+import tqdm
+
+checkpoint_path = "checkpoint/models--mistralai--Mistral-7B-Instruct-v0.2/snapshots/41b61a33a2483885c981aa79e0df6b32407ed873/"
 
 dataset = load_dataset("neural-bridge/rag-dataset-12000",split="test")
 
 device = "cuda" # the device to load the model onto
-model = AutoModelForCausalLM.from_pretrained("mistralai/Mistral-7B-Instruct-v0.2",device_map="auto", load_in_4bit=True) # load_in_8bit, or remove it for fp16
-tokenizer = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-Instruct-v0.2")
+model = AutoModelForCausalLM.from_pretrained(checkpoint_path,device_map="auto", load_in_4bit=True) # load_in_8bit, or remove it for fp16
+tokenizer = AutoTokenizer.from_pretrained(checkpoint_path)
 
 # IMPORTANT: CHANGE HERE FOR CHECKPOINTING
 prompting_range_start = 0
-prompting_range_end = 2#len(dataset)
+prompting_range_end = len(dataset)
 
 outList = []
-for i in range(prompting_range_start,prompting_range_end):
+for i in tqdm.tqdm(range(prompting_range_start,prompting_range_end)):
     context = dataset["context"][i]
     question = dataset["question"][i]
     goldenResponse = dataset["answer"][i]
@@ -31,7 +35,11 @@ for i in range(prompting_range_start,prompting_range_end):
     raw_output = raw_output[:-4] # remove EOS token
     # print(raw_output)
     outList.append([context, question, goldenResponse ,raw_output])
+    with open('./mistral_inference_num_{}-{}.jsonl'.format(prompting_range_start, prompting_range_end), 'a') as result_file:
+        result_file.write(json.dumps({"context": context, "question": question, "goldenResponse": goldenResponse, "raw_output": raw_output}))
+        result_file.write("\n")
 
-df = pandas.DataFrame.from_dict(outList)
-df.columns = ["context", "question", "goldenResponse", "modelOutput"]
-df.to_csv("./mistral_inference_nums_"+str(prompting_range_start)+"-"+str(prompting_range_end)+".csv")
+
+# df = pandas.DataFrame.from_dict(outList)
+# df.columns = ["context", "question", "goldenResponse", "modelOutput"]
+# df.to_csv("./mistral_inference_nums_"+str(prompting_range_start)+"-"+str(prompting_range_end)+".csv")
