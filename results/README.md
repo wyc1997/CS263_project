@@ -1,1 +1,1 @@
-Add your results in this folder
+Add your generation results in this folder
