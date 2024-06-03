@@ -13,7 +13,7 @@ model = AutoModelForCausalLM.from_pretrained(checkpoint_path,device_map="auto", 
 tokenizer = AutoTokenizer.from_pretrained(checkpoint_path)
 
 # IMPORTANT: CHANGE HERE FOR CHECKPOINTING
-prompting_range_start = 0
+prompting_range_start = 2147
 prompting_range_end = len(dataset)
 
 outList = []
@@ -21,6 +21,8 @@ for i in tqdm.tqdm(range(prompting_range_start,prompting_range_end)):
     context = dataset["context"][i]
     question = dataset["question"][i]
     goldenResponse = dataset["answer"][i]
+    if context is None or question is None or goldenResponse is None:
+        continue
     message_raw = "Context: \n"+context + "\n given the above context, answer the question: "+question
     # print(message_raw)
     messages = [
